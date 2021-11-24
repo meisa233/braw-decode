@@ -84,11 +84,14 @@ void Braw::openFile(std::string filepath)
 	// Setup BRAW SDK
 	factory = CreateBlackmagicRawFactoryInstanceFromPath(lib);
 	factory->CreateCodec(&codec);
-	const char *c = info->filename.c_str();
+	const char *cc = info->filename.c_str();
+        CFStringRef c = CFStringCreateWithCString(NULL, cc, kCFStringEncodingUTF8);
 	codec->OpenClip(c, &clip);
 	codec->SetCallback(&frameProcessor);
-
-	clip->GetFrameCount(&(info->frameCount));
+	std::cerr <<"info->frameCount" <<info->frameCount;
+	uint64_t * frameCount = (uint64_t *)(info->frameCount);
+	//clip->GetFrameCount(&(info->frameCount));
+	clip->GetFrameCount(frameCount);
 	clip->GetFrameRate(&info->framerate);
 
 	if(frameOut == 0)
@@ -128,7 +131,7 @@ void Braw::decode()
 
 	if(info->verbose)
 		std::cerr << "Begining decode of " << frameIn << "-" << frameOut << std::endl;
-	
+	std::cerr << "frameOut is" << frameOut << std::endl;
 	while (info->frameIndex < frameOut)
 	{
 		if (info->threads >= maxThreads)
@@ -232,4 +235,3 @@ void Braw::printFFFormat()
 
 	std::cout << ffmpegInputFormat;
 }
-

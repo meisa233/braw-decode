@@ -49,8 +49,8 @@ class FrameProcessor : public IBlackmagicRawCallback
 		virtual void DecodeComplete(IBlackmagicRawJob*, HRESULT) {}
 		virtual void TrimProgress(IBlackmagicRawJob*, float) {}
 		virtual void TrimComplete(IBlackmagicRawJob*, HRESULT) {}
-		virtual void SidecarMetadataParseWarning(IBlackmagicRawClip*, const char*, uint32_t, const char*) {}
-		virtual void SidecarMetadataParseError(IBlackmagicRawClip*, const char*, uint32_t, const char*) {}
+		virtual void SidecarMetadataParseWarning(IBlackmagicRawClip*, CFStringRef, uint32_t, CFStringRef) {}
+		virtual void SidecarMetadataParseError(IBlackmagicRawClip*, CFStringRef, uint32_t, CFStringRef) {}
 		virtual void PreparePipelineComplete(void*, HRESULT) {}
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, LPVOID*)
@@ -110,7 +110,7 @@ class Braw
 		unsigned int frameOut;
 		
 		// BRAW SDK
-		const char *lib = "Libraries/";
+		CFStringRef lib = CFSTR("Libraries/");
 		int maxThreads = 4;
 		IBlackmagicRawFactory* factory = nullptr;
 		IBlackmagicRaw* codec = nullptr;
@@ -134,4 +134,3 @@ class Braw
 
 
 #endif
-

@@ -4,8 +4,8 @@ TARGET_EXEC := braw-decode
 BUILD_DIR := ./build
 SRC_DIRS := ./src \
             ./Include \
-            ./Libraries
-LDFLAGS = -lpthread -ldl
+            ./Libraries /usr/local/bin /usr/local/include /usr/local/lib
+LDFLAGS = -lpthread -ldl -framework CoreFoundation
 
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. Make will incorrectly expand these otherwise.
@@ -26,7 +26,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
-CPPFLAGS := $(INC_FLAGS) -MMD -MP -g
+CPPFLAGS := $(INC_FLAGS) -std=c++11 -MMD -MP -g
 
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)

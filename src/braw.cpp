@@ -1,20 +1,20 @@
 #include "braw.h"
 
-
+static const BlackmagicRawResourceFormat s_resourceFormat = blackmagicRawResourceFormatRGBAU8;
 void FrameProcessor::ReadComplete(IBlackmagicRawJob* readJob, HRESULT result,
 IBlackmagicRawFrame* frame)
 {
 	BrawInfo* info = nullptr;
 	readJob->GetUserData((void**)&info);
 if (result == S_OK)
-	frame->SetResourceFormat(info->resourceFormat);
-if (result == S_OK)
-	frame->SetResolutionScale(info->resolutionScale);
-	
-	
+	frame->SetResourceFormat(s_resourceFormat);
+//if (result == S_OK)
+//	frame->SetResolutionScale(info->resolutionScale);
+
+
 	IBlackmagicRawJob* decodeAndProcessJob = nullptr;
 if (result == S_OK)
-	frame->CreateJobDecodeAndProcessFrame(nullptr, nullptr, &decodeAndProcessJob);
+	result = frame->CreateJobDecodeAndProcessFrame(nullptr, nullptr, &decodeAndProcessJob);
 if (result == S_OK)
 	decodeAndProcessJob->SetUserData(info);
 if (result == S_OK)
@@ -45,7 +45,7 @@ IBlackmagicRawProcessedImage* processedImage)
 		processedImage->GetWidth(&info->width);
 		processedImage->GetHeight(&info->height);
 	}
-	
+
 	unsigned int size = 0;
 	void* imageData = nullptr;
 	processedImage->GetResource(&imageData);
@@ -53,7 +53,7 @@ IBlackmagicRawProcessedImage* processedImage)
 
 	// Print out image data
 	if (!info->infoPass)
-		std::cout.write(reinterpret_cast<char*>(imageData), size); 
+		std::cout.write(reinterpret_cast<char*>(imageData), size);
 
 	job->Release();
 
@@ -102,17 +102,27 @@ void Braw::openFile(std::string filepath)
   }
 	const char *cc = info->filename.c_str();
   CFStringRef c = CFStringCreateWithCString(NULL, cc, kCFStringEncodingUTF8);
-
+  //CFStringRef c = CFSTR("/Users/zhaoqidi/Desktop/braw-decode/sample.braw");
   result = codec->OpenClip(c, &clip);
+	//std::cerr << *c << '\n';
   if (result != S_OK)
   {
     std::cerr << "Failed to open IBlackmagicRawClip!" << std::endl;
   }
-	codec->SetCallback(&frameProcessor);
-	std::cerr <<"info->frameCount" <<info->frameCount;
-	uint64_t * frameCount = (uint64_t *)(info->frameCount);
-	//clip->GetFrameCount(&(info->frameCount));
-	clip->GetFrameCount(frameCount);
+	result = codec->SetCallback(&frameProcessor);
+	if (result != S_OK)
+	{
+		std::cerr << "Failed to set IBlackmagicRawCallback!" << std::endl;
+	}
+
+	//uint64_t * frameCount = (uint64_t *)(info->frameCount);
+	////clip->GetFrameCount(&(info->frameCount));
+	//clip->GetFrameCount(frameCount);
+
+	unsigned long long frameCount = 0;
+	result = clip->GetFrameCount(&(info->frameCount));
+
+	//std::cerr <<"frameCount: " <<info->frameCount<<std::endl;
 	clip->GetFrameRate(&info->framerate);
 
 	if(frameOut == 0)
@@ -151,7 +161,7 @@ void Braw::decode()
 
 	if(info->verbose)
 		std::cerr << "Begining decode of " << frameIn << "-" << frameOut << std::endl;
-	std::cerr << "frameOut is" << frameOut << std::endl;
+	//std::cerr << "frameOut is" << frameOut << std::endl;
 	while (info->frameIndex < frameOut)
 	{
 		if (info->threads >= maxThreads)
@@ -178,7 +188,7 @@ void Braw::decode()
 }
 
 void Braw::addArgs(ArgParse *parser)
-{	
+{
 	parser->addArg(argColorFormat,&rawColorFormat,argColorFormatOptions,argColorFormatDescriptions);
 	parser->addArg(argMaxThreads,&rawMaxThreads);
 	parser->addArg(argFrameIn,&rawFrameIn);
@@ -206,7 +216,7 @@ void Braw::validateArgs()
 		info->resourceFormat = rawColorFormat == "f32s" ? blackmagicRawResourceFormatRGBF32 : info->resourceFormat;
 		info->resourceFormat = rawColorFormat == "f32p" ? blackmagicRawResourceFormatRGBF32Planar : info->resourceFormat;
 		info->resourceFormat = rawColorFormat == "f32a" ? blackmagicRawResourceFormatBGRAF32 : info->resourceFormat;
-		// Get scale		
+		// Get scale
 		info->resolutionScale = rawScale == "1" ? blackmagicRawResolutionScaleFull : info->resolutionScale;
 		info->resolutionScale = rawScale == "2" ? blackmagicRawResolutionScaleHalf : info->resolutionScale;
 		info->resolutionScale = rawScale == "4" ? blackmagicRawResolutionScaleQuarter : info->resolutionScale;
@@ -249,7 +259,7 @@ void Braw::printFFFormat()
 	ffmpegInputFormat += " -r ";
 	ffmpegInputFormat += std::to_string(info->framerate);
 	ffmpegInputFormat += " -i pipe:0 ";
-	
+
 	if (info->resourceFormat == blackmagicRawResourceFormatRGBU16Planar)
 		ffmpegInputFormat += "-filter:v colorchannelmixer=0:1:0:0:0:0:1:0:1:0:0:0 ";
 

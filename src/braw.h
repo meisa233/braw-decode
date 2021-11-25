@@ -22,15 +22,15 @@ struct BrawInfo
 	unsigned int width = 0;
 	unsigned int height = 0;
 	unsigned int scale = 1;
-	long unsigned int frameCount;
+	unsigned long long frameCount;
 	unsigned int frameIndex = 0;
 	float framerate = 0;
 	std::string filename;
-	
+
 	// SDK Info
 	BlackmagicRawResourceFormat resourceFormat = blackmagicRawResourceFormatRGBAU8;
 	BlackmagicRawResolutionScale resolutionScale = blackmagicRawResolutionScaleFull;
-	
+
 	// Program Info
 	bool verbose = false;
 	bool infoPass = true;
@@ -71,7 +71,7 @@ class FrameProcessor : public IBlackmagicRawCallback
 };
 
 
-class Braw 
+class Braw
 {
 	private:
 		// Arguments
@@ -80,7 +80,7 @@ class Braw
 		std::vector<std::string> argColorFormatDescriptions = {
 			"Unsigned 8bit interleaved RGBA (FFmpeg format: rgba)",
 			"Unsigned 8bit interleaved BGRA (FFmpeg format: bgra)",
-			"Unsigned 16bit interleaved RGB (FFmpeg format: rgb48le)", 
+			"Unsigned 16bit interleaved RGB (FFmpeg format: rgb48le)",
 			"Unsigned 16bit planar RGB      (FFmpeg format: gbrp16le)", // Use filter to realign colors -filter:v colorchannelmixer=0:1:0:0:0:0:1:0:1:0:0:0
 			"Floating point interleaved RGB", // All 32b floats cause FFmpeg errors
 			"Floating point planar RGB",
@@ -103,14 +103,14 @@ class Braw
 		bool verbose = false;
 		ARG argFFFormat = {'f',"ff-format","Print FFmpeg arguments for processing decoded video\n\r\tExample: '-f rawvideo -pixel_format rgba -s 3840x2160 -r 60 -i pipe:0`"};
 		bool ffPrint = false;
-		
+
 		// File info
 		BrawInfo *info;
 		unsigned int frameIn;
 		unsigned int frameOut;
-		
+
 		// BRAW SDK
-		CFStringRef lib = CFSTR("Libraries/");
+		CFStringRef lib = CFSTR("./Libraries/");
 		int maxThreads = 4;
 		IBlackmagicRawFactory* factory = nullptr;
 		IBlackmagicRaw* codec = nullptr;
@@ -118,7 +118,7 @@ class Braw
 		IBlackmagicRawJob* readJob = nullptr;
 
 		FrameProcessor frameProcessor;
-		
+
 		void decode();
 
 	public:

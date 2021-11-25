@@ -6,22 +6,26 @@ IBlackmagicRawFrame* frame)
 {
 	BrawInfo* info = nullptr;
 	readJob->GetUserData((void**)&info);
-
+if (result == S_OK)
 	frame->SetResourceFormat(info->resourceFormat);
+if (result == S_OK)
 	frame->SetResolutionScale(info->resolutionScale);
 	
 	
 	IBlackmagicRawJob* decodeAndProcessJob = nullptr;
+if (result == S_OK)
 	frame->CreateJobDecodeAndProcessFrame(nullptr, nullptr, &decodeAndProcessJob);
-
+if (result == S_OK)
 	decodeAndProcessJob->SetUserData(info);
-
+if (result == S_OK)
 	result = decodeAndProcessJob->Submit();
 
 	if (result != S_OK)
 	{
 		if (decodeAndProcessJob)
 			decodeAndProcessJob->Release();
+
+    delete info;
 	}
 
 	readJob->Release();
@@ -78,15 +82,32 @@ Braw::~Braw()
 
 void Braw::openFile(std::string filepath)
 {
+
 	// Store file
 	info->filename = filepath;
 
 	// Setup BRAW SDK
 	factory = CreateBlackmagicRawFactoryInstanceFromPath(lib);
-	factory->CreateCodec(&codec);
+  HRESULT result;
+  if (factory == nullptr)
+  {
+    std::cerr << "Failed to create IBlackmagicRawFactory!" << std::endl;
+    result = E_FAIL;
+  }
+  result = S_OK;
+  result = factory->CreateCodec(&codec);
+  if (result != S_OK)
+  {
+    std::cerr << "Failed to create IBlackmagicRaw!" << std::endl;
+  }
 	const char *cc = info->filename.c_str();
-        CFStringRef c = CFStringCreateWithCString(NULL, cc, kCFStringEncodingUTF8);
-	codec->OpenClip(c, &clip);
+  CFStringRef c = CFStringCreateWithCString(NULL, cc, kCFStringEncodingUTF8);
+
+  result = codec->OpenClip(c, &clip);
+  if (result != S_OK)
+  {
+    std::cerr << "Failed to open IBlackmagicRawClip!" << std::endl;
+  }
 	codec->SetCallback(&frameProcessor);
 	std::cerr <<"info->frameCount" <<info->frameCount;
 	uint64_t * frameCount = (uint64_t *)(info->frameCount);
@@ -100,7 +121,6 @@ void Braw::openFile(std::string filepath)
 	IBlackmagicRawJob* jobRead = nullptr;
 	clip->CreateJobReadFrame(info->frameIndex, &jobRead);
 	jobRead->SetUserData(info);
-	HRESULT result;
 	result = jobRead->Submit();
 
         if (result != S_OK)

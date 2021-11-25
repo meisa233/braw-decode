@@ -6,7 +6,7 @@ project is to allow unattended, headless, conversion of `*.braw` files
 into other file formats.
 
 From meisa233:
-    I just make some changes and make it run on macOS which passes the test on macOS 10.14.
+    I just make some changes and make it run on macOS which passed the test on macOS 10.14.
     
 ## Examples
 

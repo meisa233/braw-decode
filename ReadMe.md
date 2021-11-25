@@ -1,19 +1,22 @@
-# BRAW Decode
+# BRAW Decode on macOS
 
 This is a project that uses the official Blackmagic Raw SDK to decode a 
 `*.braw` file in a way that can be read by FFmpeg. The goal of the 
 project is to allow unattended, headless, conversion of `*.braw` files
 into other file formats.
 
+From meisa233:
+    I just make some changes and make it run on macOS which passes the test on macOS 10.14.
+    
 ## Examples
 
 I'll start right off by showing you some examples of how the 
 `braw-decode` program may be used.
 
 Generate proxy editing files:
-
+(In the root folder of braw-decode)
 ```
-braw-decode -s 2 sample.braw | ffmpeg -y -i sample.braw  $(braw-decode -s 2 -f sample.braw) \
+./braw-decode -s 2 sample.braw | ./ffmpeg -y -i sample.braw  $(./braw-decode -s 2 -f sample.braw) \
 -map 1:v:0 -map 0:a:0 -c:a copy \
 -c:v dnxhd -vf "scale=1280:720,format=yuv422p" -b:v 60M  output.mov
 ```
@@ -21,7 +24,7 @@ braw-decode -s 2 sample.braw | ffmpeg -y -i sample.braw  $(braw-decode -s 2 -f s
 Convert to 10b 32Mbps h265 for archiving using NVENC using 16 bit source:
 
 ```
-braw-decode -v -c 16pl sample.braw | ffmpeg -y -i sample.braw $(braw-decode -c 16pl -f sample.braw) \
+./braw-decode -v -c 16pl sample.braw | ./ffmpeg -y -i sample.braw $(./braw-decode -c 16pl -f sample.braw) \
 -map 1:v:0 -map 0:a:0 -c:a copy \
 -c:v hevc_nvenc -b:v 32M -profile:v rext output.mov
 ```
@@ -198,3 +201,8 @@ Libraries folder somewhere like `/usr/lib64/brawsdk/` or
 `/opt/brawsdk/` and change the path in `braw.h` that is assigned to
 `lib` on line 113 and recompile. With a full path it can find the 
 files from anywhere.
+
+A command line that I tested:
+```
+./braw-decode -v -t 4 22_A053_02050638_C011.braw | ./ffmpeg -y -i 22_A053_02050638_C011.braw $(./braw-decode -v -t 4 -f 22_A053_02050638_C011.braw) -map 1:v:0 -map 0:a:0 -vf setfield=tff -flags +ilme+ildct -c:v prores -c:a pcm_s24le -profile:v 2 -vendor apl0 -pix_fmt yuv422p10le -r 25 -s 1920x1080 -y output.mov
+```

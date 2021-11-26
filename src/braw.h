@@ -89,7 +89,7 @@ class Braw
 		std::string rawColorFormat = "rgba";
 
 		ARG argMaxThreads = {'t',"threads","Number of CPU threads to use for decoding"};
-		std::string rawMaxThreads = "4";
+		std::string rawMaxThreads = "8";
 		ARG argFrameIn = {'i',"in","Start frame index for decoding"};
 		std::string rawFrameIn = "0";
 		ARG argFrameOut = {'o',"out","End frame index for decoding"};
